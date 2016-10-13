@@ -5,6 +5,9 @@
 int counter;
 int hook_id_timer;
 
+/*
+ * Converts binary number to BCD
+ */
 unsigned long binaryToBCD(unsigned long n)
 {
   unsigned long final=0;
@@ -109,7 +112,11 @@ int timer_subscribe_int( )
 	if (sys_irqsetpolicy(TIMER0_IRQ, IRQ_REENABLE, &hook_id_timer) == OK)
 		return TIMER0_IRQ;
 	else
+	{
+		printf("Sys_irqserpolicy failed!\n");
 		return -1;
+	}
+
 }
 
 int timer_unsubscribe_int()
@@ -118,7 +125,11 @@ int timer_unsubscribe_int()
 	if( sys_irqrmpolicy(&hook_id_timer) ==OK)
 		return 0;
 	else
-		return 1;
+	{
+		printf("Sys_irqrmpolicy failed!\n");
+		return -1;
+	}
+
 }
 
 void timer_int_handler()
@@ -127,13 +138,16 @@ void timer_int_handler()
 }
 
 
-unsigned long getByte(unsigned long timer)//selection bit
+/*
+ * Defines the selection byte for each timer
+ */
+unsigned long getByte(unsigned long timer)
 {
 	unsigned long byte;
 
 	 if(timer==0)
 	 {
-		 byte = (TIMER_RB_CMD|TIMER_RB_COUNT_|TIMER_RB_SEL(0));//bit5bit4bit321
+		 byte = (TIMER_RB_CMD|TIMER_RB_COUNT_|TIMER_RB_SEL(0));
 		 return byte;
 	 }
 	 else if (timer==1)
@@ -154,14 +168,14 @@ int timer_get_conf(unsigned long timer, unsigned char *st)
 	unsigned long byte;
 	unsigned long t;
 
-	if(timer<0 || timer>2)//checks if timer is valid
+	if(timer<0 || timer>2)
 	{
 		printf("Timer value is invalid! \n");
 		return 1;
 	}
 
 		byte=getByte(timer);
-		if(sys_outb(TIMER_CTRL,byte)!=OK)//writes
+		if(sys_outb(TIMER_CTRL,byte)!=OK)
 		{
 			printf("SYS_OUTB function failed! \n");
 			return 1;
@@ -169,18 +183,18 @@ int timer_get_conf(unsigned long timer, unsigned char *st)
 
 		if(timer==0)
 		{
-			if(sys_inb(TIMER_0,&t) != OK)//reads
+			if(sys_inb(TIMER_0,&t) != OK)
 			{
 				printf("SYS_INB function failed! \n");
 				return 1;
 			}
-			*st= (unsigned char) t;//address of memory position to be filled with the timer config
+			*st= (unsigned char) t;
 			return 0;
 		}
 
 		else if(timer==1)
 		{
-			if(sys_inb(TIMER_1,&t) != OK)//reads
+			if(sys_inb(TIMER_1,&t) != OK)
 			{
 				printf("SYS_INB function failed! \n");
 				return 1;
@@ -191,7 +205,7 @@ int timer_get_conf(unsigned long timer, unsigned char *st)
 
 		else if(timer==2)
 		{
-			if(sys_inb(TIMER_2,&t) != OK)//reads
+			if(sys_inb(TIMER_2,&t) != OK)
 			{
 				printf("SYS_INB function failed! \n");
 				return 1;
@@ -270,6 +284,7 @@ int timer_test_int(unsigned long time)
 	counter = 0;
 
 	timer_set_square(0, freq);
+
 	bit_hook_id = timer_subscribe_int();
 	if(bit_hook_id  == -1)
 	{
@@ -277,8 +292,6 @@ int timer_test_int(unsigned long time)
 		return 1;
 	}
 	irq_set = BIT(bit_hook_id);
-
-
 
 	while(counter < time*freq) {
 			if ( (r=driver_receive(ANY, &msg, &ipc_status)) !=0 ) {
@@ -329,8 +342,16 @@ int timer_test_config(unsigned long timer)
 	{
 		if(timer_display_conf(st)==0)
 			return 0;
-		else return 1;
+		else
+		{
+			printf("Timer_display_conf function failed!\n");
+			return 1;
+		}
 	}
-	else return 1;
+	else
+	{
+		printf("Timer_get_conf function failed!\n");
+		return 1;
+	}
 
 }
