@@ -155,3 +155,4 @@ static long parse_long(char *str, int base) {
 
 	/* Successful conversion */
 	return val;
+}
