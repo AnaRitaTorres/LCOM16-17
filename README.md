@@ -1,2 +1,2 @@
 # LCOM16-17
-LCOM FEUP
+LABS DONE DURING LCOM CLASSES. @miriamcmcg @AnaRitaTorres
