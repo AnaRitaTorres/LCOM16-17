@@ -92,7 +92,7 @@ int keyboard_write_cmd(unsigned long command)
 	unsigned long stat;
 	unsigned int i=0;
 
-	while (i < NUMBER_TRIES)
+	while (1)
 	{
 		if(sys_inb(STAT_REG, &stat)!=OK)
 		{
@@ -100,7 +100,7 @@ int keyboard_write_cmd(unsigned long command)
 			return -1;
 		}
 
-		if ((stat & INPUT_BUFFER_FULL) == 0)
+		while (!(stat & INPUT_BUFFER_FULL))
 		{
 			if(sys_outb(KBD_CMD_REG, command)!=OK)
 			{
@@ -115,29 +115,32 @@ int keyboard_write_cmd(unsigned long command)
 
 }
 
-unsigned long keyboard_read_resp(unsigned long data)
+unsigned long keyboard_read_resp()
 {
 	unsigned long stat;
 	unsigned int i=0;
-
-	while (i < NUMBER_TRIES)
+	unsigned long data;
+	while (1)
 	{
 		if(sys_inb(STAT_REG, &stat)!=OK)
 		{
 			printf("sys_inb function failed!\n");
 			return -1;
 		}
-		if (stat & OUTPUT_BUFFER_FULL)
+		while (!(stat & OUTPUT_BUFFER_FULL))
 		{
 			if(sys_inb(OUT_BUF, &data)!=OK)
 			{
 				printf("sys_inb function failed!\n");
 				return -1;
 			}
-			if ((stat &(PARITY|TIMEOUT)) == 0)
+
+			if ((stat &(PARITY|TIMEOUT)) == 0){
 				return data;
+			}
 			else
 				return -1;
+
 		}
 		tickdelay(micros_to_ticks(DELAY_US));
 		i++;
@@ -146,22 +149,23 @@ unsigned long keyboard_read_resp(unsigned long data)
 
 }
 
-int keyboard_get_resp(unsigned long command, unsigned long data){
+int keyboard_get_resp(unsigned long command){
 	unsigned int i=0;
+	unsigned long data;
 	do {
 			if (keyboard_write_cmd(command) == -1)
 			{
 				printf("keyboard_write_cmd function failed\n");
 				return 1;
 			}
-
-			if (keyboard_read_resp(data) == -1) {
+			data =keyboard_read_resp();
+			if (data == -1) {
 				printf("keyboard_read_resp function failed\n");
 				return 1;
 			}
 
 			i++;
-		} while ((data == ERROR || data == RESEND) && i < NUMBER_TRIES);
+		} while ((data == ERROR || data == RESEND || data != ACK) && i < NUMBER_TRIES);
 
 	if(i >= NUMBER_TRIES)
 	{
@@ -174,9 +178,7 @@ int keyboard_get_resp(unsigned long command, unsigned long data){
 int keyboard_leds(unsigned int led)
 {
 
-	unsigned long data = 0;
-
-	if(keyboard_get_resp(KBD_SWITCH_LED,  data) ==  1)
+	if(keyboard_get_resp(KBD_SWITCH_LED) ==  1)
 	{
 		return 1;
 	}
@@ -184,7 +186,7 @@ int keyboard_leds(unsigned int led)
 	status= status^BIT(led);
 	keyboard_print_led(led);
 
-	if(keyboard_get_resp(status,  data) ==  1)
+	if(keyboard_get_resp(status) ==  1)
 	{
 		return 1;
 	}

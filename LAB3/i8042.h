@@ -8,12 +8,11 @@
 
 #define DELAY_US 							20000
 
-#define SHIFT_LEFT(arg,n)      				(arg << n)
-#define BREAK_CODE(scancode)   				(scancode & BIT(7))
+#define SHIFT_LEFT(arg,n)      (arg << n)
+
 #define BREAK_CODE_BIT						BIT(7)
 
 #define IRQ_KBD                    			1
-
 
 #define STAT_REG			    			0x64
 #define OUT_BUF 							0x60
@@ -22,7 +21,8 @@
 #define ESC                     			0x81
 
 // LEDS 
-#define KBD_SWITCH_LED						0xED
+#define KBD_SWITCH_LED                      0xED
+
 
 //RESPONSES
 #define	ACK									0xFA

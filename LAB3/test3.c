@@ -48,6 +48,7 @@ int kbd_test_scan(unsigned short ass) {
 								resp = keyboard_scan_c();
 								break;
 							case 1:
+								resp = keyboard_scan_asm();
 								break;
 
 							}
@@ -183,7 +184,9 @@ int kbd_test_timed_scan(unsigned short n) {
 			case HARDWARE:
 				if (msg.NOTIFY_ARG & timer_irq_set) {
 					timedOut++;
-
+					if (timedOut % STANDARD_FREQ == 0){
+						printf("Second %d without scanning! \n",timedOut/STANDARD_FREQ);
+					}
 				}
 				if (msg.NOTIFY_ARG & kbd_irq_set) {
 					resp = keyboard_scan_c();

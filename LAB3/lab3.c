@@ -88,7 +88,7 @@ static int proc_args(int argc, char *argv[]) {
 			leds[i] = (unsigned short) e;
 		}
 		printf("keyboard::kbd_test_leds(%d, leds)\n",n);
-		if (kbd_test_leds( (unsigned short) n, leds)){
+		if (kbd_test_leds( (unsigned short) n, leds)==1){
 			printf("kbd_test_leds function failed\n");
 			return 1;
 		}

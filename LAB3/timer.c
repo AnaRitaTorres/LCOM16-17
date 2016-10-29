@@ -110,7 +110,9 @@ int timer_subscribe_int( )
 	hook_id_timer= TIMER0_IRQ;
 
 	if (sys_irqsetpolicy(TIMER0_IRQ, IRQ_REENABLE, &hook_id_timer) == OK)
+	{
 		return TIMER0_IRQ;
+	}
 	else
 	{
 		printf("Sys_irqserpolicy failed!\n");
@@ -122,12 +124,12 @@ int timer_subscribe_int( )
 int timer_unsubscribe_int()
 {
 
-	if( sys_irqrmpolicy(&hook_id_timer) ==OK)
+	if( sys_irqrmpolicy(&hook_id_timer)==OK)
 		return 0;
 	else
 	{
 		printf("Sys_irqrmpolicy failed!\n");
-		return -1;
+		return 1;
 	}
 
 }
