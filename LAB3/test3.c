@@ -211,5 +211,11 @@ int kbd_test_timed_scan(unsigned short n) {
 		printf("timer_unsubscribe_int function failed! \n");
 		return 1;
 	}
+	if (keyboard_unsubscribe_int() == 0)
+			return 0;
+	else {
+		printf("keyboard_unsubscribe_int function failed! \n");
+		return 1;
+	}
 
 }
