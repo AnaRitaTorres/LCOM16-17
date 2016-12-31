@@ -1,0 +1,65 @@
+#include <minix/syslib.h>
+#include <minix/drivers.h>
+#include <machine/int86.h>
+
+#include "vbe.h"
+#include "lmlib.h"
+
+#define LINEAR_MODEL_BIT 14
+
+#define PB2BASE(x) (((x) >> 4) & 0x0F000)
+#define PB2OFF(x) ((x) & 0x0FFFF)
+
+int vbe_get_mode_info(unsigned short mode, vbe_mode_info_t *vmi_p) {
+
+	mmap_t map;
+	struct reg86u r;
+
+
+	if(lm_init() == NULL){
+		printf("lm_init function failed! \n");
+		return 1;
+	}
+	map.virtual = lm_alloc(sizeof(map.size), &map);
+	if (map.virtual ==  NULL) {
+		printf("lm_alloc function failed\n");
+		return 1;
+	}
+
+	r.u.w.ax = 0x4F01;
+	r.u.b.intno = 0x10 ;
+	r.u.w.cx = mode;
+	r.u.w.es = PB2BASE(map.phys);
+	r.u.w.di = PB2OFF(map.phys);
+
+
+
+	if (sys_int86(&r) != OK) {
+		printf("\tvg_init(): sys_int86() failed \n");
+		return 1;
+	}
+	else
+	{
+		*vmi_p = *((vbe_mode_info_t*) map.virtual);
+		lm_free(&map);
+		return 0;
+
+
+		if(r.u.b.ah == (FUNCTION_CALL_SUCCESSFUL) && r.u.b.ah == 0x4F)
+		{
+			*vmi_p = *((vbe_mode_info_t*) map.virtual);
+			lm_free(&map);
+
+			return 0;
+
+		}
+
+		if(r.u.b.ah == (FUNCTION_CALL_FAILED || FUNCTION_INVALID || FUNCTION_NOT_SUPPORTED)) {
+			printf("Set Video Mode function failed! \n");
+			return 1;
+		}
+	}
+
+}
+
+
